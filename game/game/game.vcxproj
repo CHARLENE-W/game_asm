@@ -146,23 +146,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <MASM Include="..\..\theFirstProject\test.asm">
-      <FileType>Document</FileType>
-    </MASM>
+    <ResourceCompile Include="game.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\theFirstProject\theFirstProject.rc" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\theFirstProject\2.bmp" />
-    <Image Include="..\..\theFirstProject\980.bmp" />
-    <Image Include="..\..\theFirstProject\bg2.bmp" />
-    <Image Include="..\..\theFirstProject\bitmap3.bmp" />
-    <Image Include="..\..\theFirstProject\bitmap6.bmp" />
-    <Image Include="..\..\theFirstProject\bitmap7.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\theFirstProject\resource.h" />
+    <MASM Include="test.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

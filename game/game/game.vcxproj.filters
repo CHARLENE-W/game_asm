@@ -15,37 +15,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\theFirstProject\theFirstProject.rc">
+    <ResourceCompile Include="game.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\theFirstProject\2.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\theFirstProject\980.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\theFirstProject\bg2.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\theFirstProject\bitmap3.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\theFirstProject\bitmap6.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\theFirstProject\bitmap7.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\theFirstProject\resource.h">
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="..\..\theFirstProject\test.asm">
+    <MASM Include="test.asm">
       <Filter>源文件</Filter>
     </MASM>
   </ItemGroup>

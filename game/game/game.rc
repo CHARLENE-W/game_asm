@@ -1,0 +1,205 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#define IDB_BITMAP2  111
+#define IDB_MENU1  150
+#define IDB_MENU2  151
+#define IDB_MENU3  152
+#define IDB_MENU4  153
+#define IDB_MARK1  154
+#define IDB_RETURN 155
+#define IDB_HELP   156
+#define IDB_HELPMARK    157
+#define IDB_BACK1   158
+#define IDB_BACK2   159
+#define IDB_BACK3   160
+#define IDB_BACK4   161
+#define IDB_BACK5   162
+#define IDB_BACKMARK    163
+#define IDB_BACKSMALL1   164
+#define IDB_BACKSMALL2   165
+#define IDB_BACKSMALL3   166
+#define IDB_BACKSMALL4   167
+#define IDB_BACKSMALL5   168
+#define	IDB_CHOICE1		 169
+#define	IDB_CHOICEMARK1		170
+#define	IDB_CHOICE2		 171
+#define	IDB_CHOICEMARK2		172
+#define	IDB_NUM0	173
+#define	IDB_NUM1	175
+#define	IDB_NUM2	177
+#define	IDB_NUM3	179
+#define	IDB_NUM4	181
+#define	IDB_NUM5	183
+#define	IDB_NUM6	185
+#define	IDB_NUM7	187
+#define	IDB_NUM8	189
+#define	IDB_NUM9	191
+#define IDB_NUMMARK0	174
+#define IDB_NUMMARK1	176
+#define IDB_NUMMARK2	178
+#define IDB_NUMMARK3	180
+#define IDB_NUMMARK4	182
+#define IDB_NUMMARK5	184
+#define IDB_NUMMARK6	186
+#define IDB_NUMMARK7	188
+#define IDB_NUMMARK8	190
+#define IDB_NUMMARK9	192
+
+#define IDB_SCORE	193
+#define IDB_SCOREMARK	194
+#define	IDB_STOP	195
+#define	IDB_RETURN2	196
+
+#define IDB_BITMAP4 115
+#define IDB_BOARD1 117
+#define IDB_BOARD2 118
+#define IDB_BOARD3 119
+#define IDB_BITMAP7 120
+#define IDB_BOARDMARK2 121
+#define IDB_BOARDMARK3 122
+#define IDB_MAN1    123
+#define IDB_MANMARK1    124
+#define IDB_MAN2    125
+#define IDB_MANMARK2    126
+#define IDB_MAN3    127
+#define IDB_MANMARK3    128
+#define IDB_MAN4    129
+#define IDB_MANMARK4    130
+#define IDB_MANSEL1     131
+#define IDB_MANSEL2     132
+#define IDB_MANSEL3     133
+#define IDB_MANSEL4     134
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(简体，中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE
+BEGIN
+"resource.h\0"
+END
+
+2 TEXTINCLUDE
+BEGIN
+"#include ""winres.h""\r\n"
+"\0"
+END
+
+3 TEXTINCLUDE
+BEGIN
+"\r\n"
+"\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP2     BITMAP      "back.bmp"
+IDB_MENU1       BITMAP      "menu1.bmp"
+IDB_MENU2       BITMAP      "menu2.bmp"
+IDB_MENU3       BITMAP      "menu4.bmp"
+IDB_MENU4       BITMAP      "menu3.bmp"
+IDB_RETURN      BITMAP      "return.bmp"
+IDB_BOARD1      BITMAP      "board1.bmp"
+IDB_BOARD2      BITMAP      "board2.bmp"
+IDB_BOARD3      BITMAP      "board3.bmp"
+IDB_MARK1       BITMAP      "mark.bmp"
+IDB_BITMAP7     BITMAP      "board1.bmp"
+IDB_BOARDMARK2     BITMAP      "board2mark.bmp"
+IDB_BOARDMARK3     BITMAP      "board3mark.bmp"
+IDB_MAN1        BITMAP      "man1.bmp"
+IDB_MANMARK1    BITMAP      "man1mark.bmp"
+IDB_MAN2        BITMAP      "man2.bmp"
+IDB_MANMARK2    BITMAP      "man2mark.bmp"
+IDB_MAN3        BITMAP      "man3.bmp"
+IDB_MANMARK3    BITMAP      "man3mark.bmp"
+IDB_MAN4        BITMAP      "man4.bmp"
+IDB_MANMARK4    BITMAP      "man4mark.bmp"
+IDB_HELP        BITMAP      "help.bmp"
+IDB_HELPMARK        BITMAP      "helpmark.bmp"
+IDB_MANSEL1     BITMAP      "man1Sel.bmp"
+IDB_MANSEL2     BITMAP      "man2Sel.bmp"
+IDB_MANSEL3     BITMAP      "man3Sel.bmp"
+IDB_MANSEL4     BITMAP      "man4Sel.bmp"
+IDB_BACK1       BITMAP      "back1.bmp"
+IDB_BACK2       BITMAP      "back2.bmp"
+IDB_BACK3       BITMAP      "back3.bmp"
+IDB_BACK4       BITMAP      "back4.bmp"
+IDB_BACK5       BITMAP      "back5.bmp"
+IDB_BACKMARK	BITMAP		"backmark.bmp"
+IDB_BACKSMALL1       BITMAP      "back1Small.bmp"
+IDB_BACKSMALL2       BITMAP      "back2Small.bmp"
+IDB_BACKSMALL3       BITMAP      "back3Small.bmp"
+IDB_BACKSMALL4       BITMAP      "back4Small.bmp"
+IDB_BACKSMALL5       BITMAP      "back5Small.bmp"
+IDB_CHOICE1		BITMAP		"choice1.bmp"
+IDB_CHOICEMARK1		BITMAP		"choice1mark.bmp"
+IDB_CHOICE2		BITMAP		"choice2.bmp"
+IDB_CHOICEMARK2		BITMAP		"choice2mark.bmp"
+
+IDB_NUM0	BITMAP		"num0.bmp"
+IDB_NUM1	BITMAP		"num1.bmp"
+IDB_NUM2	BITMAP		"num2.bmp"
+IDB_NUM3	BITMAP		"num3.bmp"
+IDB_NUM4	BITMAP		"num4.bmp"
+IDB_NUM5	BITMAP		"num5.bmp"
+IDB_NUM6	BITMAP		"num6.bmp"
+IDB_NUM7	BITMAP		"num7.bmp"
+IDB_NUM8	BITMAP		"num8.bmp"
+IDB_NUM9	BITMAP		"num9.bmp"
+IDB_NUMMARK0	BITMAP		"num0mark.bmp"
+IDB_NUMMARK1	BITMAP		"num1mark.bmp"
+IDB_NUMMARK2	BITMAP		"num2mark.bmp"
+IDB_NUMMARK3	BITMAP		"num3mark.bmp"
+IDB_NUMMARK4	BITMAP		"num4mark.bmp"
+IDB_NUMMARK5	BITMAP		"num5mark.bmp"
+IDB_NUMMARK6	BITMAP		"num6mark.bmp"
+IDB_NUMMARK7	BITMAP		"num7mark.bmp"
+IDB_NUMMARK8	BITMAP		"num8mark.bmp"
+IDB_NUMMARK9	BITMAP		"num9mark.bmp"
+IDB_SCORE		BITMAP		"score.bmp"
+IDB_SCOREMARK		BITMAP		"scoremark.bmp"
+IDB_STOP		BITMAP		"stop.bmp"
+IDB_RETURN2		BITMAP		"return2.bmp"
+
+// IDB_BACKMARK    BITMAP      "backmark.bmp"
+#endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
