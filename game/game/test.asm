@@ -79,8 +79,31 @@ IDB_SCORE	equ	193
 IDB_SCOREMARK	equ	194
 IDB_STOP	equ	195
 IDB_RETURN2	equ	196
+IDB_AIXINBACK	equ	199
+IDB_CHOICE3	equ	200
+IDB_CHOICEMARK3	equ	201
+IDB_LEVEL1	equ	202
+IDB_LEVEL2	equ	203
+IDB_LEVEL3	equ	204
+IDB_LEVELMARK	equ	205
+IDB_GAMEOVER	equ	206
+IDB_GAMEOVERMARK	equ	207
+IDB_LOGO	equ	208
 
-IDB_BOARD1 equ 117
+IDB_AIXIN	equ	209
+IDB_AIXINMARK	equ	210
+IDB_ADDSCORE1	equ	211
+IDB_ADDSCOREMARK1	equ	212
+IDB_ADDSCORE2	equ	213
+IDB_ADDSCOREMARK2	equ	214
+IDB_ADDSCORE3	equ	215
+IDB_ADDSCOREMARK3	equ	216
+IDB_ADDSCORE4	equ	217
+IDB_ADDSCOREMARK4	equ	218
+
+
+IDB_BOARD1 equ 116
+IDB_BOARDMARK1 equ 117
 IDB_BOARD2 equ 118
 IDB_BOARD3 equ 119
 IDB_BITMAP7 equ 120
@@ -125,57 +148,107 @@ BOARD struct
 		IsHp	dd	?
 		mytype	dd	?
 		startTime	dd	?
+		touched	dd	0
 	BOARD ends
+
+ITEAM struct
+	hbp dd ?
+	pos_x dd ?
+	pos_y dd ?
+	size_w dd ?
+	size_h dd ?
+	flag dd ?
+ITEAM ends
 ;#########全局变量
-;记录窗口的大小，结构体内容为 top，left，bottom，right（四角的值）
-stRect RECT <0,0,0,0>
-IsTouchBack	dd	-1
 
-man		PLAYER	<5,5,0,5>;通过man.hp得到man的生命值
-manAddr		dd		?
-
-boards	BOARD 13 dup(<0,0,0,0,0>);结构体数组
-
+;####窗口相关
+stRect RECT <0,0,0,0>;记录窗口的大小，结构体内容为 top，left，bottom，right（四角的值）
+iteams ITEAM 100 dup(<0,0,0,0,0,0>);待加载
+iteams_count dd 0;加载位图数量
+level_flag	dd	1;难度
 back_flag	dd	1;背景图
 man_flag	dd	1;选择人物头像
-man_height	dd	30
-man_width	dd	41
-man_life_flag	dd	0;当该值为3时，分数加1，并将该值置零，每刷新一次，该值加1
-
 gamePattern	dd	1;游戏的难易模式
-flag dd 0
 Paint_flag dd 0;页面跳转标志 0：菜单 1：游戏界面，2：设置界面，3：帮助界面
+PAUSETIME	dd	25;刷新时间
+;####平台相关
+boards	BOARD 13 dup(<0,0,0,0,0>);结构体数组
+DisTime		dd	10000
+;####人物相关
+man		PLAYER	<5,5,0,5>;通过man.hp得到man的生命值
+man_height	dd	30
+man_width	dd	40
+man_life_flag	dd	0;当该值为3时，分数加1，并将该值置零，每刷新一次，该值加1
+manAddr		dd		?
+;####逻辑相关
+IsTouchBack	dd	-1
+flag dd 0
 isGameOver	dd	0;游戏是否结束
 HP_flag	dd	0;加血道具出现的次数
+scoreArray	dd	20	dup(0);分数值
+nowScorePos	dd	0
+aixin_prob	dd	75;爱心出现的概率(1-aixin_prob),下同
+zhadan_prob	dd	60
+disappearTime	dd	6000;冰块消失时间
+
 .const
 manNum	dd	4
 Mytype	MYTYPE	<0,1,2>;通过Mytype.wood得到wood的值
 BOARD_LEN	dd 	24
-jump_dist dd 8 ;每次刷新位移距离，可调节运行速度
 board_width dd 100 ;板子长度
 board_height dd 20 ;板子高度
 flushTime	dd	100
+daoju_prob	dd	40
+jump_dist dd 4 ;每次刷新位移距离，可调节运行速度
+
 szClassName	db	'MyClass',0
-szCaptionMain	db	'game',0
+szCaptionMain	db	'是男人就下一百层',0
+szDebug db 'disappear:num=%d',0ah,0
+szDebug1 db 'display:num=%d',0ah,0
+szDebug2 db 'generate:num=%d',0ah,0
 man1	MANPOS	<30,41>;四个人物的高度和宽度
 man2	MANPOS	<30,27>
 man3	MANPOS	<30,31>
 man4	MANPOS	<30,38>
+
 ten dd	10
-PAUSETIME	dd	300;刷新时间
-boardCount dd 13
+boardCount dd 13;木板数量
 board_num	dd	13;木板数量
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; 代码段
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 .code
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>显示相关
-isDisappear proc C num:DWORD
+;存储要刷新的object，保存句柄、位置，大小，以及标志位
+store proc uses eax edi ecx hbp,x,y,w,h,myflag 
+mov eax,iteams_count
+mov edi ,offset iteams
+mov ecx,TYPE ITEAM
+mul ecx
+add edi,eax
+mov eax,hbp
+mov (ITEAM PTR [edi]).hbp,eax
+mov eax,x
+mov (ITEAM PTR [edi]).pos_x,eax
+mov eax,y
+mov (ITEAM PTR [edi]).pos_y,eax
+mov eax,w
+mov (ITEAM PTR [edi]).size_w,eax
+mov eax,h
+mov (ITEAM PTR [edi]).size_h,eax
+mov eax,myflag
+mov (ITEAM PTR [edi]).flag,eax
+mov eax,iteams_count
+inc eax
+mov iteams_count,eax
+ret
+store endp
+
+isDisappear proc C uses ebx edi ecx num:DWORD
 	local @cur_time:dword
 	local @board_time:dword
 	local @during_time:dword
-	local @tmp:dword 
-	
+	local @tmp:dword
 	mov edi,offset boards
 	mov eax,num
 	mov	ebx,TYPE BOARD
@@ -187,87 +260,106 @@ S_:
 	mov eax,(BOARD PTR [edi]).mytype
 	cmp eax,Mytype.glass
 	jne T
+	mov	eax,(BOARD PTR [edi]).touched
+	cmp	eax,0
+	je	T
 	mov eax,(BOARD PTR [edi]).startTime
 	mov @board_time,eax
-	invoke GetTickCount
+	invoke timeGetTime
 	mov @cur_time,eax
 	mov ecx,@board_time
 	sub eax,ecx
 	mov @during_time,eax
-	mov eax,10000	;时间可能需要调整
+	mov eax,disappearTime	;时间可能需要调整
 	mul @tmp
 	cmp @during_time,eax
 	jg S
 T:
 	mov eax,1
 	ret
-S:	mov eax,0
+S:	
+	mov eax,(BOARD PTR [edi]).x_left
+	mov (BOARD PTR [edi]).x_right,eax
+	mov eax,0
 	ret
 
 isDisappear endp
-displayBg proc uses ebx edi esi eax hWnd,hDc,hBitMap
-		local	@hdcMe:DWORD
-		local	@bminfo :BITMAP
-		invoke SetStretchBltMode,hDc,HALFTONE
-		invoke CreateCompatibleDC,hDc
-		mov @hdcMe,eax
-		invoke CreatePatternBrush,hBitMap
-		mov hBrush,eax
-		invoke SelectObject,@hdcMe,hBrush
-		invoke FillRect,hDc,addr stRect,hBrush
-		invoke DeleteObject,hBitMap
-		invoke DeleteDC,@hdcMe
-		ret
-displayBg endp
-displayBm proc uses ebx edi esi eax hWnd,hDc,hBitMap, bmX, bmY, w, h;w=width,h=height，可指定bitmap的位置和大小
-		local	@hdcMe:DWORD
-		local	@bminfo :BITMAP
-		invoke SetStretchBltMode,hDc,HALFTONE
-		invoke CreateCompatibleDC,hDc
-		mov @hdcMe,eax
-		invoke GetObject,hBitMap,type @bminfo,addr @bminfo
-		invoke SelectObject,@hdcMe,hBitMap
 
-		invoke  StretchBlt,hDc,bmX,bmY,w,h,@hdcMe,0,0,@bminfo.bmWidth,@bminfo.bmHeight, SRCCOPY
-		invoke DeleteObject,hBitMap
-		invoke DeleteDC,@hdcMe
+displayBm proc uses ebx edi esi eax hWnd,hDc,hBitMap, bmX, bmY, w, h;w=width,h=height，可指定bitmap的位置和大小
+		invoke store,hBitMap, bmX, bmY, w, h,SRCCOPY
 		ret
 displayBm endp
-;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>;菜单按钮的图片要与输出的位置做或运算，才能正确输出>>>>>>>>>>>>>>>>>>>>>>>>>
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;菜单按钮的图片要与输出的位置做或运算，才能正确输出
 displayBmOR proc uses ebx edi esi eax hWnd,hDc,hBitMap, bmX, bmY, w, h;w=width,h=height，可指定bitmap的位置和大小
-		local	@hdcMe:DWORD
-		local	@bminfo :BITMAP
-		invoke SetStretchBltMode,hDc,HALFTONE
-		invoke CreateCompatibleDC,hDc
-		mov @hdcMe,eax
-		invoke GetObject,hBitMap,type @bminfo,addr @bminfo
-		invoke SelectObject,@hdcMe,hBitMap
-
-		invoke  StretchBlt,hDc,bmX,bmY,w,h,@hdcMe,0,0,@bminfo.bmWidth,@bminfo.bmHeight, SRCPAINT;
-		invoke DeleteObject,hBitMap
-		invoke DeleteDC,@hdcMe
+		invoke store,hBitMap, bmX, bmY, w, h, SRCPAINT;
 		ret
 displayBmOR endp
-;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>在指定位置输出mark>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;在指定位置输出mark
 displayMark proc uses ebx edi esi eax hWnd,hDc,hBitMap, bmX, bmY, w, h;w=width,h=height，可指定bitmap的位置和大小
-		local	@hdcMe:DWORD
-		local	@bminfo :BITMAP
-		invoke SetStretchBltMode,hDc,HALFTONE
-		invoke CreateCompatibleDC,hDc
-		mov @hdcMe,eax
-		invoke GetObject,hBitMap,type @bminfo,addr @bminfo
-		invoke SelectObject,@hdcMe,hBitMap
-
-		invoke  StretchBlt,hDc,bmX,bmY,w,h,@hdcMe,0,0,@bminfo.bmWidth,@bminfo.bmHeight, SRCAND
-		invoke DeleteObject,hBitMap
-		invoke DeleteDC,@hdcMe
+		invoke store,hBitMap, bmX, bmY, w, h, SRCAND
 		ret
 displayMark endp
-;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>板子>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..
-;板子
+;双缓冲刷新窗口
+display proc uses eax ecx hdc
+	local	@bminfo :BITMAP
+	local	@mdc:DWORD;
+	local	@bmp:DWORD;
+	local	@maphdc:DWORD
+
+	;创建缓冲区,mdc->hdc
+	invoke CreateCompatibleDC,hdc
+	mov @mdc,eax
+
+	;创建缓冲区,主要用来存放单张贴图，n*maphdc->mdc
+	invoke CreateCompatibleDC,@mdc
+	mov @maphdc,eax
+
+	;创建空白贴图，主要为了初始化mdc大小
+	invoke CreateCompatibleBitmap,hdc,stRect.right,stRect.bottom
+	mov @bmp,eax
+	invoke  SelectObject,@mdc,@bmp
+
+	;使得可调整大小
+	invoke SetStretchBltMode,hdc,HALFTONE
+	invoke SetStretchBltMode,@mdc,HALFTONE
+	mov ecx,0
+	mov edi ,offset iteams
+
+	;该循环是将所有位图加载进mdc
+L1:	
+	push ecx
+	invoke GetObject,(ITEAM PTR [edi]).hbp,type @bminfo,addr @bminfo
+	invoke SelectObject,@maphdc,(ITEAM PTR [edi]).hbp
+;		invoke BitBlt,@mdc,(ITEAM PTR [edi]).pos_x,(ITEAM PTR [edi]).pos_y, stRect.right,stRect.bottom, @mdc, 0, 0, (ITEAM PTR [edi]).flag
+	invoke  StretchBlt,@mdc,(ITEAM PTR [edi]).pos_x,(ITEAM PTR [edi]).pos_y,(ITEAM PTR [edi]).size_w,(ITEAM PTR [edi]).size_h,@maphdc,0,0,@bminfo.bmWidth,@bminfo.bmHeight,(ITEAM PTR [edi]).flag
+	invoke DeleteObject,(ITEAM PTR [edi]).hbp
+	pop ecx
+	add edi, TYPE ITEAM
+	inc ecx
+	mov eax,iteams_count
+	cmp ecx,eax
+	jl L1
+
+	;mdc->hdc一次全部复制过去
+	invoke BitBlt,hdc, 0, 0, stRect.right,stRect.bottom, @mdc, 0, 0, SRCCOPY;
+	jmp R
+
+R:
+	mov eax,0
+	mov iteams_count,eax
+	invoke DeleteDC,@maphdc
+	invoke DeleteDC,@mdc
+	ret
+display endp
+
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..
+;平台
 displayBoards proc uses ebx edi esi hWnd ,hDc
 	local @board_exsit:DWORD
 	local @tmo_board:BOARD
+	local @aixin_x:dword,@aixin_y:dword
 	local	@hBitMap,@hBmpMark
 	mov edi,0
 	mov ecx,0
@@ -279,14 +371,79 @@ L:
 
 	mov eax,(BOARD PTR boards[edi]).x_left
 	mov @tmo_board.x_left,eax
+	
+
+	mov eax,(BOARD PTR boards[edi]).x_right
+	mov @tmo_board.x_right,eax
 
 	mov eax,(BOARD PTR boards[edi]).mytype
 	mov @tmo_board.mytype,eax
 
+	mov eax,(BOARD PTR boards[edi]).IsHp
+	mov @tmo_board.IsHp,eax
+	.if @tmo_board.IsHp != 0
+		mov eax,@tmo_board.y	
+		MOV @aixin_y,eax
+		sub @aixin_y,20		
+		mov eax,@tmo_board.x_left
+		mov @aixin_x,eax
+		add @aixin_x,40;爱心的横坐标
+		add eax,17
+		.if man.x > eax
+			add eax,44
+			.if man.x < eax
+				mov eax,@tmo_board.y
+				sub eax,man_height
+				sub eax,20
+				.if man.y > eax
+					add eax,man_height
+					add eax,20
+					.if man.y < eax
+						mov (BOARD PTR boards[edi]).IsHp,0
+						.if @tmo_board.IsHp == 1
+							add man.hp,1
+							dec HP_flag
+						.elseif	@tmo_board.IsHp == 2
+							add man.score,3
+						.elseif	@tmo_board.IsHp == 3
+							add man.score,5
+						.elseif	@tmo_board.IsHp == 4
+							add man.score,10
+						.elseif	@tmo_board.IsHp == 5
+							dec man.hp
+							cmp man.score,20
+							jl e2
+							sub man.score,20
+							jmp e1
+						e2:	mov man.score,0
+						.endif
+						jmp e1
+					.endif
+				.endif
+			.endif
+		.endif
+		push ecx
+		sub edi,edi
+		mov edi,IDB_AIXIN
+		dec edi
+		add edi,@tmo_board.IsHp
+		add edi,@tmo_board.IsHp
+		push edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,hDc, @hBmpMark, @aixin_x,@aixin_y,20,20
+		pop edi
+		dec edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,hDc, @hBitMap,  @aixin_x,@aixin_y,20,20
+		pop ecx
+	.endif
+e1:
+	
 	invoke isDisappear,ecx
-	mov @board_exsit,eax
-	cmp @board_exsit,1
-	jne default
+	cmp eax,0
+	je default
 	mov eax,@tmo_board.y
 	cmp eax,stRect.bottom
 	jge default
@@ -301,9 +458,13 @@ L:
 	je case3
 	jmp default
 case1:
+	invoke LoadBitmap,hInstance,IDB_BOARDMARK1
+	mov @hBmpMark,eax
+	invoke displayMark,hWnd,hDc, @hBmpMark, @tmo_board.x_left,@tmo_board.y,board_width,board_height
+	
 	invoke LoadBitmap,hInstance,IDB_BOARD1
 	mov @hBitMap,eax
-	invoke displayBm,hWnd,hDc, @hBitMap, @tmo_board.x_left,@tmo_board.y,board_width,board_height
+	invoke displayBmOR,hWnd,hDc, @hBitMap, @tmo_board.x_left,@tmo_board.y,board_width,board_height
 	jmp default
 case2:
 	invoke LoadBitmap,hInstance,IDB_BOARDMARK2
@@ -336,57 +497,60 @@ default:
 no:
 	ret
 displayBoards endp
+
 isTouch1 proc uses ecx ebx edi edx
-local @tmp_board:BOARD
 ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++TODO: istouch 重新设置参数，现在似乎不能正常使用
 	; for1 (int i = 0; i < board_num; i++)
-	sub ecx,ecx;i
-	sub edi,edi
+	xor ecx,ecx;ecx=0
+	xor edi,edi;edi=0
 	mov eax,ecx
 L:
 	cmp		ecx, board_num
 	jge		E1
 
-		mov		ebx, boards[edi].x_right ; ebx:x_right
-	mov @tmp_board.x_right,ebx
-	mov		ebx, boards[edi].x_left ; ebx:x_right
-	mov @tmp_board.x_left,ebx
-	mov		ebx, boards[edi].y ; ebx:x_right
-	mov @tmp_board.y,ebx
-	mov		ebx, boards[edi].mytype ; ebx:x_right
-	mov @tmp_board.mytype,ebx
-
 	;man.x<board.left
 	mov		ebx, boards[edi].x_left ; ebx:x_left
+	sub		ebx,15
 	cmp		man.x, ebx
 	jl	S1
 
 	; man.x+man_width < Boards[i].x_right
 	mov		ebx, boards[edi].x_right ; ebx:x_right
-	mov eax,man_width
+	add		ebx,25
+	mov		eax,man_width
 	add		eax, man.x;因为人物有一定宽度
 	cmp		eax, ebx
 	jg		S1
 
-
 	; man.y <= (Boards[i].y)-10
 	mov		ebx, boards[edi].y ; ebx:y
-	sub ebx,10;即适当放大合法范围
+	sub ebx,8;即适当放大合法范围
 	mov edx,man.y
 	add edx,man_height
 	cmp	edx, ebx
 	jl	S1
 	;man.y>board[i].y+10
 	mov		ebx, boards[edi].y ; ebx:y
-	add ebx,10;即适当放大合法范围
+	add ebx,8;即适当放大合法范围
 	mov edx,man.y
 	add edx,man_height
 	cmp	edx, ebx
 	jg	S1
 	; if1 (Boards[i].type == spine)
+	mov		boards[edi].touched,1
 	mov		ebx, boards[edi].mytype
 	cmp		ebx, Mytype.spine
 	je		E2
+	
+	mov		ebx, boards[edi].mytype
+	cmp		ebx, Mytype.glass
+	jne		E3
+	mov		ebx,boards[edi].touched
+	cmp		ebx,0
+	jne		E3
+	invoke	timeGetTime
+	mov		boards[edi].startTime,eax
+E3:
 	mov		eax, ecx ; return i
 	ret
 E2:
@@ -400,6 +564,8 @@ E1:
 	mov		eax, -1
 	ret	
 isTouch1 endp
+
+
 ReviveMan proc uses ebx edx eax
 	dec		man.hp
 	;invoke	time, 0
@@ -423,13 +589,13 @@ dPL1:
 	;pop		ecx
 	;loop	dPL1
 dPL1E:
-	; if1 (isTouch() == -2 || Man.y <= 10 || Man.y >= border_height - 10)
+	; if1 (isTouch() == -2 || Man.y <= 5 || Man.y >= border_height - 10)
 	; isTouch() == -2
 	invoke	isTouch1
 	cmp		eax, -2
 	je		dPIF1T
 	; Man.y <= 1
-	cmp		man.y, 10
+	cmp		man.y, 5
 	jle		dPIF1T
 	; Man.y >= border_height - 2
 	mov		eax, stRect.bottom
@@ -442,8 +608,24 @@ dPIF1T:
 	; if2 (Man.hp)
 	cmp		man.hp, 0
 	je		dPIF2F
+	jmp		dPIF1F
 ;	invoke	PrintInfo
 dPIF2F:
+	mov edi,nowScorePos
+	mov ebx,man.score
+	mov scoreArray[edi*4],ebx
+	inc nowScorePos
+	.if nowScorePos >= 24
+		mov nowScorePos,0
+	.endif
+	mov Paint_flag,1
+	invoke LoadBitmap,hInstance,IDB_GAMEOVERMARK
+	mov @hBmpMark,eax
+	invoke displayMark,hWnd,hDc, @hBmpMark,250,180,300,240
+	invoke LoadBitmap,hInstance,IDB_GAMEOVER
+	mov @hBitMap,eax
+	invoke displayBmOR,hWnd,hDc, @hBitMap,250,180,300,240
+	;invoke InvalidateRect,hWnd,addr stRect,TRUE
 dPIF1F:
 	; if3 (Man.x < 2)
 	cmp		man.x, 0
@@ -496,11 +678,7 @@ dPIF5F:
 	sub		eax, 10
 	mov		ebx, stRect.bottom
 	sar		ebx, 1
-	;invoke	gotoXY, eax, ebx
-	;invoke	printf, offset gameOverStr
-;	invoke	Sleep, 4000
-	;invoke	system, offset clsStr
-	mov Paint_flag,0
+	mov Paint_flag,6
 	;invoke InvalidateRect,hWnd,NULL,FALSE
 	mov		eax,-1
 dPIF5E:
@@ -532,7 +710,36 @@ displayOther proc uses ebx edi esi hWnd ,hDc
 		invoke LoadBitmap,hInstance,IDB_STOP
 		mov @hBitMap,eax
 		invoke displayBmOR,hWnd,hDc, @hBitMap,-20,80,100,50
-
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>生命值>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		invoke LoadBitmap,hInstance,IDB_SCOREMARK
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,hDc,@hBmpMark,120,20,180,40
+		invoke LoadBitmap,hInstance,IDB_AIXINBACK
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,hDc, @hBitMap,120,20,180,40
+		
+		sub edx,edx
+		mov eax,man.hp
+		mov ebx,125
+e3:		
+		mov edi,IDB_AIXINMARK
+		push eax
+		push edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,hDc,@hBmpMark,ebx,30,20,20
+		pop edi
+		dec edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,hDc, @hBitMap,ebx,30,20,25
+		pop eax
+		add ebx,23
+		dec eax
+		cmp eax,0
+		jle	e4
+		jmp e3
+e4:		
 		sub edx,edx
 		mov eax,man.score
 		mov ebx,750
@@ -542,7 +749,7 @@ e1:
 		mov edi,IDB_NUM1
 		dec edi
 		add edi,edx
-		adc edi,edx;现在edi存的是数字n的num(n)mark图
+		add edi,edx;现在edi存的是数字n的num(n)mark图
 		push eax
 		push edi
 		invoke LoadBitmap,hInstance,edi
@@ -573,13 +780,13 @@ MovePlay proc uses eax, down:dword
 	cmp eax,27
 	je case4
 case1:
-	sub man.x,5
+	sub man.x,20
 	jmp e3
 case2:
-	add man.x,5
+	add man.x,20
 	jmp e3
 case3:
-	add man.y,4
+	add man.y,7
 	jmp e3
 case4:
 	ret
@@ -600,32 +807,47 @@ paint1 proc uses ebx edi esi hWnd
 		;background imge
 		invoke LoadBitmap,hInstance,IDB_BITMAP2
 		mov @hBitMap,eax
-		invoke displayBg,hWnd,@hDc,@hBitMap
+		invoke displayBm,hWnd,@hDc,@hBitMap,0,0,stRect.right,stRect.bottom
 
+		invoke LoadBitmap,hInstance,IDB_LOGO
+		mov @hBitMap,eax
+		invoke displayBm,hWnd,@hDc, @hBitMap,77,60,280,280
 ;>>>>>>>>>>>>>>>>开始游戏按钮>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		mov ebx,500
 		invoke LoadBitmap,hInstance,IDB_MARK1
 		mov @hBmpMark,eax
-		invoke displayMark,hWnd,@hDc,@hBmpMark,350,180,120,40
+		invoke displayMark,hWnd,@hDc,@hBmpMark,ebx,180,120,40
 		invoke LoadBitmap,hInstance,IDB_MENU1
 		mov @hBitMap,eax
-		invoke displayBmOR,hWnd,@hDc, @hBitMap,350,180,120,40
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,ebx,180,120,40
 ;>>>>>>>>>>>>>>>>菜单按钮>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		invoke displayMark,hWnd,@hDc,@hBmpMark,350,250,120,40
+		invoke LoadBitmap,hInstance,IDB_MARK1
+		mov @hBmpMark,eax
+		
+		invoke displayMark,hWnd,@hDc,@hBmpMark,ebx,250,120,40
 		invoke LoadBitmap,hInstance,IDB_MENU2
 		mov @hBitMap,eax
-		invoke displayBmOR,hWnd,@hDc, @hBitMap,350,250,120,40
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,ebx,250,120,40
 ;>>>>>>>>>>>>>>>>退出按钮>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		invoke displayMark,hWnd,@hDc,@hBmpMark,350,320,120,40
+		invoke LoadBitmap,hInstance,IDB_MARK1
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,ebx,320,120,40
 		invoke LoadBitmap,hInstance,IDB_MENU3
 		mov @hBitMap,eax
-		invoke displayBmOR,hWnd,@hDc, @hBitMap,350,320,120,40
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,ebx,320,120,40
 ;>>>>>>>>>>>>>>>>退出按钮>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		invoke displayMark,hWnd,@hDc,@hBmpMark,350,390,120,40
+		invoke LoadBitmap,hInstance,IDB_MARK1
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,ebx,390,120,40
 		invoke LoadBitmap,hInstance,IDB_MENU4
 		mov @hBitMap,eax
-		invoke displayBmOR,hWnd,@hDc, @hBitMap,350,390,120,40
-		
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,ebx,390,120,40
+		invoke display,@hDc
 		invoke	EndPaint,hWnd,addr @stPs
+		
+
+		invoke DeleteDC,@hDc
+		invoke DeleteObject,@hBitMap
 		ret
 paint1 endp
 
@@ -637,12 +859,24 @@ paint2 proc uses ebx edi esi hWnd
 		local  @posX:DWORD
 		local @posY:DWORD
 		invoke	BeginPaint,hWnd,addr @stPs
+		mov	@hDc,eax
 		add man_life_flag,1
-		.if man_life_flag == 3
-			add man.score,1
-			mov man_life_flag,0
+		.if level_flag == 1
+			.if man_life_flag == 50
+				add man.score,1
+				mov man_life_flag,0
+			.endif
+		.elseif level_flag == 2
+			.if man_life_flag == 100
+				add man.score,1
+				mov man_life_flag,0
+			.endif
+		.elseif level_flag == 3
+			.if man_life_flag == 200
+				add man.score,1
+				mov man_life_flag,0
+			.endif
 		.endif
-		mov	@hDc,eax 
 		mov edi,IDB_BACK1
 		dec edi
 		add edi,back_flag
@@ -650,11 +884,20 @@ paint2 proc uses ebx edi esi hWnd
 		mov @hBitMap,eax
 		invoke displayBm,hWnd,@hDc, @hBitMap,0,0,stRect.right,stRect.bottom
 		invoke displayBoards ,hWnd,@hDc
+		.if man.hp > 7
+			mov man.hp,7
+		.endif
+		
 		invoke	displayOther,hWnd,@hDc
 		invoke displayPlayer ,hWnd,@hDc
 			;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++TODO: 生命值等其他信息的输出
 			;	invoke displayOther ,hWnd,@hDc
+		invoke display,@hDc
 		invoke	EndPaint,hWnd,addr @stPs
+		
+
+		invoke DeleteDC,@hDc
+		invoke DeleteObject,@hBitMap
 		ret
 paint2 endp
 
@@ -737,6 +980,14 @@ paint3 proc uses ebx edi esi ecx edx hWnd
 		invoke LoadBitmap,hInstance,IDB_CHOICE1
 		mov @hBitMap,eax
 		invoke displayBmOR,hWnd,@hDc, @hBitMap,200,165,120,50
+
+		invoke LoadBitmap,hInstance,IDB_CHOICEMARK1
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,160,330,120,50
+		invoke LoadBitmap,hInstance,IDB_CHOICE3
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,160,330,120,50	
+
 ;>>>>>>>>>>>>>>>>选择的背景>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		mov eax,back_flag
 		dec eax
@@ -764,6 +1015,39 @@ e1:
 			inc ecx
 			cmp ecx,5
 			jl e1
+
+;>>>>>>>>>>>>>>>>选择的难度>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		mov eax,level_flag
+		dec eax
+		mov ebx,104
+		mul ebx
+		mov ebx,eax
+		add ebx,298
+		invoke LoadBitmap,hInstance,IDB_BACKMARK
+		mov @hBitMap,eax
+		invoke displayBm,hWnd,@hDc, @hBitMap,ebx,330,104,50
+;>>>>>>>>>>>>>>>>难度选择>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		mov ecx,0
+		mov ebx,310
+		mov edi,IDB_LEVEL1
+e2:		
+		push ecx
+		push edi
+		invoke LoadBitmap,hInstance,IDB_LEVELMARK
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,ebx,335,80,40
+		pop edi
+		push edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,ebx,335,80,40	
+		pop edi
+		pop ecx
+		add ebx,104
+		inc edi
+		inc ecx
+		cmp ecx,3
+		jl e2
 ;>>>>>>>>>>>>>>>>返回按钮>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		invoke LoadBitmap,hInstance,IDB_MARK1
 		mov @hBmpMark,eax
@@ -772,7 +1056,10 @@ e1:
 		mov @hBitMap,eax
 		invoke displayBmOR,hWnd,@hDc, @hBitMap,350,400,120,40
 
+		invoke display,@hDc
 		invoke	EndPaint,hWnd,addr @stPs
+		invoke DeleteDC,@hDc
+		invoke DeleteObject,@hBitMap
 		ret
 paint3 endp
 
@@ -804,10 +1091,132 @@ paint4 proc uses ebx edi esi hWnd
 		invoke LoadBitmap,hInstance,IDB_RETURN
 		mov @hBitMap,eax
 		invoke displayBmOR,hWnd,@hDc, @hBitMap,350,400,120,40
-
+		invoke display,@hDc
 		invoke	EndPaint,hWnd,addr @stPs
+		
+
+
+		invoke DeleteDC,@hDc
+		invoke DeleteObject,@hBitMap
 		ret
 paint4 endp
+
+paint5 proc uses ebx edi esi hWnd
+		local	@hDc
+		local	@stPs:PAINTSTRUCT
+		local	@hBitMap,@hBmpMark
+		local  @posX:DWORD
+		local @posY:DWORD
+		local	@tempX:dword,@tempY:dword
+		invoke	BeginPaint,hWnd,addr @stPs
+		mov	@hDc,eax 
+
+		invoke LoadBitmap,hInstance,IDB_BITMAP2
+		mov @hBitMap,eax
+		invoke displayBm,hWnd,@hDc, @hBitMap,0,0,stRect.right,stRect.bottom
+		;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++TODO: 帮助页面
+;>>>>>>>>>>>>>>>>返回按钮>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		invoke LoadBitmap,hInstance,IDB_MARK1
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,340,450,120,40
+		invoke LoadBitmap,hInstance,IDB_RETURN
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,340,450,120,40
+		
+;>>>>>>>>>>>>>>>>分数版>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>		
+		sub edx,edx
+		mov esi,0
+		mov ebx,50
+e3:	
+		push esi
+		invoke LoadBitmap,hInstance,IDB_SCOREMARK
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,150,ebx,120,40
+		invoke LoadBitmap,hInstance,IDB_SCORE
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,150,ebx,120,40
+		
+		invoke LoadBitmap,hInstance,IDB_SCOREMARK
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,340,ebx,120,40
+		invoke LoadBitmap,hInstance,IDB_SCORE
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,340,ebx,120,40
+		
+		invoke LoadBitmap,hInstance,IDB_SCOREMARK
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,510,ebx,120,40
+		invoke LoadBitmap,hInstance,IDB_SCORE
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,510,ebx,120,40
+		
+		pop esi
+		inc esi
+		add ebx,50
+		cmp esi,8
+		jl e3
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印分数>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		sub esi,esi
+
+e4:
+		push esi
+		mov eax,esi
+		sub edx,edx
+		mov edi,0
+		mov ebx,8
+		div ebx
+		mov @tempX,eax
+		mov eax,edx
+		mov ebx,50
+		mul ebx
+		mov @tempY,eax
+		mov eax,@tempX
+		mov ebx,190
+		mul ebx
+		mov @tempX,eax
+		mov ebx,170
+		add @tempY,55
+		add @tempX,245
+		mov eax,scoreArray[esi*4]
+		cmp eax,0
+		jle	e5
+		
+e1:		
+		div ten
+		;edx是尾数
+		mov edi,IDB_NUM1
+		dec edi
+		add edi,edx
+		add edi,edx;现在edi存的是数字n的num(n)mark图
+		push eax
+		push edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBmpMark,eax
+		invoke displayMark,hWnd,@hDc,@hBmpMark,@tempX,@tempY,20,30
+		pop edi
+		dec edi
+		invoke LoadBitmap,hInstance,edi
+		mov @hBitMap,eax
+		invoke displayBmOR,hWnd,@hDc, @hBitMap,@tempX,@tempY,20,30
+		pop eax
+		sub @tempX,25
+		cmp eax,0
+		jle	e2
+		jmp e1
+e2:		
+		pop esi
+		inc esi
+		cmp esi,24
+		jl	e4
+e5:	
+		invoke display,@hDc
+		invoke	EndPaint,hWnd,addr @stPs
+		
+
+		invoke DeleteDC,@hDc
+		invoke DeleteObject,@hBitMap
+		ret
+paint5 endp
 
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>逻辑相关
 ;eax作为返回值寄存器
@@ -875,6 +1284,16 @@ e1:
 	;cmp	ecx,0
 	;je	e2
 	;Boards[i].y = Boards[i - 1 < 0 ? i + board_num - 1 : i - 1].y + 4;
+	mov eax,(BOARD PTR boards[edi]).IsHp
+	.if eax == 1
+		.if HP_flag != 0
+			dec HP_flag
+			.if HP_flag < 0
+				MOV HP_flag,0
+			.endif
+		.endif			
+	.endif
+	mov	(BOARD PTR boards[edi]).IsHp,0
 	cmp ecx,0
 	jne	s1
 	mov	eax,TYPE BOARD
@@ -895,6 +1314,8 @@ e3:
 	mov	ebx,3
 	div	ebx
 	mov	(BOARD PTR boards[edi]).mytype,edx
+	mov (BOARD PTR boards[edi]).touched,0
+
 	INVOKE rand
 	mov	ebx, board_max_pos_x
 	div	ebx
@@ -904,6 +1325,42 @@ e3:
 	mov	(BOARD PTR boards[edi]).x_right,eax
 	INVOKE timeGetTime
     mov (BOARD PTR boards[edi]).startTime,eax
+	mov ebx,(BOARD PTR boards[edi]).mytype
+	.if ebx == 0;在云层上概率加载加血或加分道具
+		INVOKE rand
+		mov ebx,100
+		div ebx
+		.if edx > daoju_prob;//道具出现的概率固定为60%
+			push edx
+			sub edx,edx
+			sub eax,eax
+			invoke rand
+			mov ebx,4
+			div ebx
+			add edx,1
+			pop eax
+			.if eax > zhadan_prob;//炸弹的概率通过模式决定，分别为15%，20%，30%
+				.if eax > aixin_prob;//加血道具分别对应25%,20%,10%
+					add HP_flag,1
+					.if HP_flag <= 2
+						mov (BOARD PTR boards[edi]).IsHp,1
+					.elseif
+						mov HP_flag,2
+					.endif
+				.elseif
+					mov (BOARD PTR boards[edi]).IsHp,5
+				.endif
+			.elseif 
+				.if edx == 2
+					mov (BOARD PTR boards[edi]).IsHp,2
+				.elseif edx == 3
+					mov (BOARD PTR boards[edi]).IsHp,3
+				.elseif edx == 4
+					mov (BOARD PTR boards[edi]).IsHp,4
+				.endif
+			.endif
+		.endif
+	.endif
 	jmp	e6
 e4:
 	mov edx,jump_dist
@@ -939,8 +1396,8 @@ generatePlayer proc uses esi ebx eax
 	; if1 (i != -1 && i != -2)
 	cmp		eax, -1
 	je		gPIF1F
-;	cmp		eax, -2
-;	je		gPIF1E
+	cmp		eax, -2
+	je		gPIF1E
 	mov eax,jump_dist
 	sub		man.y,eax
 	jmp		gPIF1E	
@@ -972,12 +1429,14 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 			mov eax,Paint_flag
 			.if eax ==1
 				invoke paint2,hWnd
-			.elseif eax ==0
+			.elseif eax == 0
 				invoke paint1,hWnd
-			.elseif eax ==2
+			.elseif eax == 2
 				invoke paint3,hWnd
-			.elseif eax ==3
+			.elseif eax == 3
 				invoke paint4,hWnd
+			.elseif	eax == 4
+				invoke	paint5,hWnd
 			.endif
 ;**********************************
 		.elseif eax == WM_TIMER
@@ -992,6 +1451,12 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 			mov back_flag,1
 			mov man_height,30
 			mov man_width,41
+			mov level_flag,1
+			mov PAUSETIME,25
+			mov HP_flag,1
+			mov nowScorePos,0
+			mov zhadan_prob,60
+			mov disappearTime,5000;冰块消失时间
 			invoke GetTickCount
 			mov startTime,eax
 			invoke	GetClientRect,hWnd,addr stRect
@@ -1011,8 +1476,8 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 			mov @posY,eax
 			mov eax,@posX
 			.if Paint_flag==0;主菜单界面
-				.if eax < 460
-					.if eax > 350
+				.if eax < 620
+					.if eax > 500
 						mov eax, @posY
 						.if eax < 220
 							.if eax >180
@@ -1037,7 +1502,8 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 						.endif
 						.if eax < 430
 							.if eax > 390
-								mov Paint_flag,4;退出
+								mov Paint_flag,4;分数
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif
 						.endif
 					.endif
@@ -1057,13 +1523,36 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 						.if eax < 130
 							.if eax > 80
 								mov Paint_flag,5;暂停
-							;	invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif
 						.endif
 					.endif
 				.endif
 			.endif
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+			.if Paint_flag == 6
+				mov eax,@posY
+				.if eax < 420
+					.if eax > 380
+					mov eax,@posX
+						.if eax < 340
+							.if eax > 240
+								mov Paint_flag,0
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
+							.endif
+						.endif
+						.if eax < 540
+							.if eax > 440
+								mov Paint_flag,1;重新开始
+								invoke initBoards
+								invoke initPlayer 
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
+							.endif
+						.endif
+					.endif
+				.endif
+			.endif
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 			.if Paint_flag == 5
 				.if eax < 80
 					.if eax > 0
@@ -1105,9 +1594,9 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 								mov Paint_flag,2
 								mov man_flag,1
 								mov ebx,man1.x
-								mov man_height,ebx
+							;	mov man_height,ebx
 								mov ebx,man1.y
-								mov man_width,ebx
+							;	mov man_width,ebx
 								invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif
 						.endif
@@ -1116,9 +1605,9 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 								mov Paint_flag,2
 								mov man_flag,2
 								mov ebx,man2.x
-								mov man_height,ebx
+							;	mov man_height,ebx
 								mov ebx,man2.y
-								mov man_width,ebx
+							;	mov man_width,ebx
 								invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif
 						.endif
@@ -1127,9 +1616,9 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 								mov Paint_flag,2
 								mov man_flag,3
 								mov ebx,man3.x
-								mov man_height,ebx
+							;	mov man_height,ebx
 								mov ebx,man3.y
-								mov man_width,ebx
+							;	mov man_width,ebx
 								invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif
 						.endif
@@ -1138,9 +1627,9 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 								mov Paint_flag,2
 								mov man_flag,4
 								mov ebx,man4.x
-								mov man_height,ebx
+							;	mov man_height,ebx
 								mov ebx,man4.y
-								mov man_width,ebx
+							;	mov man_width,ebx
 								invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif
 						.endif
@@ -1197,6 +1686,50 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 						.endif
 					.endif
 				.endif
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+				mov eax,@posY
+				.if eax < 375
+					.if eax > 335
+						mov eax,@posX
+						mov ebx,310
+						.if eax > ebx
+							add ebx,80
+							.if eax < ebx
+								mov Paint_flag,2
+								mov level_flag,1
+								mov PAUSETIME,20
+								mov disappearTime,6000;冰块消失时间
+								mov aixin_prob,75
+								mov zhadan_prob,60;/炸弹概率15%（75-60）
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
+							.endif
+						.endif
+						add ebx,24
+						.if eax > ebx
+						add ebx,80
+							.if eax < ebx
+								mov Paint_flag,2
+								mov level_flag,2
+								mov PAUSETIME,13
+								mov aixin_prob,80
+								mov zhadan_prob,65;/炸弹概率20%
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
+							.endif
+						.endif
+						add ebx,24
+						.if eax > ebx
+							add ebx,80
+							.if eax < ebx
+								mov Paint_flag,2
+								mov level_flag,3
+								mov PAUSETIME,1
+								mov aixin_prob,85
+								mov zhadan_prob,67;/炸弹概率30%
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
+							.endif
+						.endif
+					.endif
+				.endif
 			.endif
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			.if Paint_flag == 3
@@ -1205,6 +1738,20 @@ _ProcWinMain	proc	uses ebx edi esi hWnd,uMsg,wParam,lParam
 						mov eax,@posY
 						.if eax < 440
 							.if	eax > 400
+								mov Paint_flag,0
+								invoke InvalidateRect,hWnd,addr stRect,TRUE
+							.endif
+						.endif
+					.endif
+				.endif
+			.endif
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+			.if Paint_flag == 4
+				.if eax < 460
+					.if eax > 340
+						mov eax,@posY
+						.if eax < 490
+							.if	eax > 450
 								mov Paint_flag,0
 								invoke InvalidateRect,hWnd,addr stRect,TRUE
 							.endif

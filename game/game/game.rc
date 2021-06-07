@@ -52,9 +52,32 @@
 #define IDB_SCOREMARK	194
 #define	IDB_STOP	195
 #define	IDB_RETURN2	196
+#define	IDB_AIXINBACK	199
+#define IDB_CHOICE3		200
+#define	IDB_CHOICEEMARK3	201
+#define	IDB_LEVEL1	202
+#define	IDB_LEVEL2	203
+#define	IDB_LEVEL3	204
+#define	IDB_LEVELMARK	205
+#define	IDB_GAMEOVER	206
+#define	IDB_GAMEOVERMARK	207
+#define	IDB_LOGO	208
+
+#define	IDB_AIXIN	209
+#define	IDB_AIXINMARK	210
+#define	IDB_ADDSCORE1	211
+#define	IDB_ADDSCOREMARK1	212
+#define	IDB_ADDSCORE2	213
+#define	IDB_ADDSCOREMARK2	214
+#define	IDB_ADDSCORE3	215
+#define	IDB_ADDSCOREMARK3	216
+#define	IDB_ADDSCORE4	217
+#define	IDB_ADDSCOREMARK4	218
+
 
 #define IDB_BITMAP4 115
-#define IDB_BOARD1 117
+#define IDB_BOARD1 116
+#define	IDB_BOARDMARK1	117
 #define IDB_BOARD2 118
 #define IDB_BOARD3 119
 #define IDB_BITMAP7 120
@@ -130,6 +153,7 @@ IDB_BOARD2      BITMAP      "board2.bmp"
 IDB_BOARD3      BITMAP      "board3.bmp"
 IDB_MARK1       BITMAP      "mark.bmp"
 IDB_BITMAP7     BITMAP      "board1.bmp"
+IDB_BOARDMARK1     BITMAP      "board1mark.bmp"
 IDB_BOARDMARK2     BITMAP      "board2mark.bmp"
 IDB_BOARDMARK3     BITMAP      "board3mark.bmp"
 IDB_MAN1        BITMAP      "man1.bmp"
@@ -186,8 +210,28 @@ IDB_SCORE		BITMAP		"score.bmp"
 IDB_SCOREMARK		BITMAP		"scoremark.bmp"
 IDB_STOP		BITMAP		"stop.bmp"
 IDB_RETURN2		BITMAP		"return2.bmp"
+IDB_AIXIN		BITMAP		"aixin.bmp"
+IDB_AIXINMARK		BITMAP		"aixinmark.bmp"
+IDB_AIXINBACK		BITMAP		"aixinback.bmp"
+IDB_CHOICE3		BITMAP		"choice3.bmp"
+IDB_CHOICEMARK3	BITMAP		"choice3mark.bmp"
+IDB_LEVEL1	BITMAP		"level1.bmp"
+IDB_LEVEL2	BITMAP		"level2.bmp"
+IDB_LEVEL3	BITMAP		"level3.bmp"
+IDB_LEVELMARK	BITMAP		"levelmark.bmp"
+IDB_GAMEOVER	BITMAP		"gameover.bmp"
+IDB_GAMEOVERMARK	BITMAP		"gameovermark.bmp"
+IDB_LOGO	BITMAP	"logo.bmp"
 
-// IDB_BACKMARK    BITMAP      "backmark.bmp"
+IDB_ADDSCORE1	BITMAP	"addscore1.bmp"
+IDB_ADDSCORE2	BITMAP	"addscore2.bmp"
+IDB_ADDSCORE3	BITMAP	"addscore3.bmp"
+IDB_ADDSCOREMARK1	BITMAP	"addscore1mark.bmp"
+IDB_ADDSCOREMARK2	BITMAP	"addscore2mark.bmp"
+IDB_ADDSCOREMARK3	BITMAP	"addscore3mark.bmp"
+IDB_ADDSCORE4	BITMAP	"addscore5.bmp"
+IDB_ADDSCOREMARK4	BITMAP	"addscore5mark.bmp"
+
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
